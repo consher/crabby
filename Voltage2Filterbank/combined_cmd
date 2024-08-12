@@ -1,0 +1,38 @@
+prefix="$1"
+tstart="$2"
+source="$3"
+dm="$4"
+tfac="${5:-8}"
+path="${6:-../}"
+
+ls -1a "${path}/"*"${source}"*"/udp"*"${tstart}"*".zst"
+
+#make symbolic links to .zst files in other storage drives
+for fil in ${path}/*"$source"*/udp*${tstart}"*zst"; do ln -s $fil ./; done
+
+echo lofar_udp_extractor -i "$prefix""$tstart".zst -u 4 -p 10 -o "$source"_"$tstart".dada | tee -a output_"$source"_"$tstart".log
+rm true_tstart_mjd_isot_"$source"_"$tstart"
+lofar_udp_extractor -i "$prefix""$tstart"".zst" -u 4 -p 10 -o "$source"_"$tstart".dada | tee -a output_"$source"_"$tstart".log
+grep "Start time" output_"$source"_"$tstart".log | head -n 1 > true_tstart_mjd_isot_"$source"_"$tstart"
+tstart_true=$(cat true_tstart_mjd_isot_"$source"_"$tstart" | awk '{print $3}')
+
+# 4 pol, 366 beams, 195312.5 samples per second -> 285937500 bytes per second
+# We cannot avoid the small offset between samples with this method unfortunately.
+bytes=$(echo $tstart_true | awk -F. '{print "0."$2}' | awk '{printf("%d\n", $1 * 381250000) }')
+
+hdr_loc=./"$source"_"$tstart".hdr
+cp ./generic.hdr $hdr_loc
+date=$(echo $tstart_true | awk -FT '{print $1}')
+time=$(echo $tstart_true | awk -FT '{print $2}' | awk -F. '{print $1}')
+tstartmjd=$(echo $tstart_true | python -c "from astropy.time import Time; time = input(); print(Time(time).mjd)")
+sed -i "s/isotstart/"$date"-"$time"/g" $hdr_loc
+sed -i "s/isooffset/"$bytes"/g" $hdr_loc
+sed -i "s/src_name/"$source"/g" $hdr_loc
+
+mkdir raw_hdrs
+ra=$(psrcat -e $source | grep "RAJ" | awk '{print $2}' | sed 's/://g')
+dec=$(psrcat -e $source | grep "DECJ" | awk '{print $2}' | sed 's/://g')
+#(digifil -F 3904:D -D $dm -d 4 -b 8 -B 512 -t "$tfac" -o "$source"_"$tstart".fil ./"$source"_"$tstart".dada; rm "$source"_"$tstart".dada; chmod o+r "$source"_"$tstart".fil
+; mv $hdr_loc ./raw_hdrs/; filedit --ra $ra --dec $dec --tstart $tstartmjd "$source"_"$tstart".fil) &
+(digifil -F 3904:D -D $dm -d 4 -b 8 -B 512 -t "$tfac" -o "$source"_"$tstart".fil ./"$source"_"$tstart".dada; chmod o+r "$source"_"$tstart".fil; mv $hdr_loc ./raw_hdrs/; fil
+edit --ra $ra --dec $dec --tstart $tstartmjd "$source"_"$tstart".fil; rm ./"$source"_"$tstart".dada) &
