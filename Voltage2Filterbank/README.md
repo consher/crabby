@@ -1,0 +1,1 @@
+Used for 4 polarization voltages aquired from I-LOFAR in *.zst compression format. Produces intermediary uncompressed .dada file that is usually x4 times the size of all 4 .zst files, then converts that to a filterbank file (deleting the dada file automatically when finished)
