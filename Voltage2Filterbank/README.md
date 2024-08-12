@@ -1,4 +1,5 @@
-# Voltage Proccessor - Made by Sai Sursala & updated by Conor Sheridan
+# Voltage Proccessor
+### Made by Sai Sursala & updated by Conor Sheridan
 Used for 4 polarization voltages aquired from I-LOFAR in *.zst compression format. Produces intermediary uncompressed .dada file that is usually x4 times the size of all four .zst files (in the same directory as the 4pol script!!), then converts that to a filterbank file (deleting the dada file automatically when finished)
 
 To Do:
