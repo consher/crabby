@@ -6,11 +6,13 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-d',   dest='dir',   type=str,   help='directory of data to plot. Default your current directory.',default='.')
 parser.add_argument('-n',   dest='nsub',  type=int,   help='number of subbands to plot. Default = 1',default=1)
+parser.add_argument('-b',   dest='nbins', type=int,   help='Phase normalization (should be number of bins). Default = 128',default=128)
 parser.add_argument('-f',   dest='file',  type=str,   help='naming convention of the file(s) with {0} where the number iteration is. eg: datafile{0}.txt')
 args = parser.parse_args()
 data_dir = args.dir
 n = args.nsub
 filename = args.file
+nbins = args.nbins
 
 x_sets={}
 y_sets={}
@@ -24,12 +26,12 @@ for i in range(n):
 
     with open(f'{data_dir}/{filename}'.format(i), 'r') as file:
         for line in file:
-            if not line.startswith('#'):
+            if not(line.startswith('#') or line.startswith(' ')):
                 columns = line.split()
                 x_sets["x_set{0}".format(i)].append(int(columns[2]))
                 y_sets["y_set{0}".format(i)].append(float(columns[3]))
         
-    plt.plot(np.array(x_sets["x_set{0}".format(i)])/128, np.array(y_sets["y_set{0}".format(i)])/max(y_sets["y_set{0}".format(i)]), label='{0:.2f} MHz'.format(freqsn[i]))
+    plt.plot(np.array(x_sets["x_set{0}".format(i)])/nbins, np.array(y_sets["y_set{0}".format(i)])/max(y_sets["y_set{0}".format(i)]), label='{0:.2f} MHz'.format(freqsn[i]))
 
 plt.xlabel('Phase')
 plt.ylabel('Flux')
