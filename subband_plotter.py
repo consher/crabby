@@ -5,9 +5,9 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-d',   dest='dir',   type=str,   help='directory of data to plot. Default your current directory.',default='.')
-parser.add_argument('-n',   dest='nsub',  type=int,   help='number of subbands to plot. Default = 1',default=1)
+parser.add_argument('-s',   dest='nsub',  type=int,   help='number of subbands to plot. Default = 1',default=1)
 parser.add_argument('-b',   dest='nbins', type=int,   help='Phase normalization (should be number of bins). Default = 128',default=128)
-parser.add_argument('-f',   dest='file',  type=str,   help='naming convention of the file(s) with {0} where the number iteration is. eg: datafile{0}.txt')
+parser.add_argument('-f',   dest='file',  type=str,   help='naming convention of the file(s) with %i where the number iteration is. eg: datafile%i.txt')
 args = parser.parse_args()
 data_dir = args.dir
 n = args.nsub
@@ -21,17 +21,18 @@ y_sets={}
 freqsn=[107.71484375,118.65234375,129.58984375,140.52734375,151.46484375,162.40234375,173.33984375,184.27734375,193.65234375]
 
 for i in range(n):
-    x_sets['x_set{0}'.format(i)] = []
-    y_sets['y_set{0}'.format(i)] = []
+    x_sets['x_set%i' % i] = []
+    y_sets['y_set%i' % i] = []
 
-    with open(f'{data_dir}/{filename}'.format(i), 'r') as file:
+    with open(f"{data_dir}/{filename}" % i, 'r') as file:
         for line in file:
             if not(line.startswith('#') or line.startswith(' ')):
                 columns = line.split()
-                x_sets["x_set{0}".format(i)].append(int(columns[2]))
-                y_sets["y_set{0}".format(i)].append(float(columns[3]))
-        
-    plt.plot(np.array(x_sets["x_set{0}".format(i)])/nbins, np.array(y_sets["y_set{0}".format(i)])/max(y_sets["y_set{0}".format(i)]), label='{0:.2f} MHz'.format(freqsn[i]))
+                x_sets["x_set%i" % i].append(int(columns[2]))
+                y_sets["y_set%i" % i].append(float(columns[3]))
+    file.close()
+    x_sets["x_set%i" % i]
+    plt.plot(np.array(x_sets["x_set%i" % i])/nbins, np.array(y_sets["y_set%i" % i])/max(y_sets["y_set%i" % i]), label='{0:.2f} MHz'.format(freqsn[i]))
 
 plt.xlabel('Phase')
 plt.ylabel('Flux')
